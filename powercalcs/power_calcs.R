@@ -73,10 +73,9 @@ power_beta_maf <- function(beta, maf, n, r2, pval = 5E-8) {
   return(pow); 
 }
 
-## Calculate power
-pow <- power_beta_maf(beta = (1:20)/20, maf = (1:10)/1000, r2 = 1, n = 50000, pval=5E-8)
 
-## Visualize 
+## 1. Genome-wide significance (alpha = 5e-8) and UK Biobank-size cohort
+pow <- power_beta_maf(beta = (1:20)/20, maf = (1:10)/1000, r2 = 1, n = 50000, pval=5E-8)
 m <- melt(pow)
 names(m) <- c("beta", "maf", "power")
 ggplot(m, aes(x = beta, y = maf, fill = power, label = round(power, digits = 2))) + geom_tile(aes(fill = power)) + 
@@ -85,3 +84,37 @@ ggplot(m, aes(x = beta, y = maf, fill = power, label = round(power, digits = 2))
   scale_x_continuous (breaks = unique(m$beta)) + scale_y_continuous (breaks = unique(m$maf))
 ggsave(plot = last_plot(), filename = '/home/sorokin/projects/power/power_calcs_ppp_2.png',dpi = 330, units = "in", height = 5, width = 10)
                                                             
+## 2. Genome-wide significance (alpha = 5e-8) and n=20K cohort
+
+pow <- power_beta_maf(beta = (1:20)/20, maf = (1:10)/1000, r2 = 1, n = 20000, pval=5E-8)
+m <- melt(pow)
+names(m) <- c("beta", "maf", "power")
+ggplot(m, aes(x = beta, y = maf, fill = power, label = round(power, digits = 2))) + geom_tile(aes(fill = power)) + 
+  scale_fill_distiller(palette = "YlGnBu") + geom_text(aes(label = round (power, digits = 2))) + 
+  labs (x = "beta (standardized)", y = "Minor allele frequency", title =  bquote(paste(alpha, "=5e-8; n=50,000", sep='')))  + 
+  scale_x_continuous (breaks = unique(m$beta)) + scale_y_continuous (breaks = unique(m$maf))
+ggsave(plot = last_plot(), filename = '/home/sorokin/projects/power/power_calcs_ppp_n20000.png',dpi = 330, units = "in", height = 5, width = 10)
+
+## 3. Study-wide significance (alpha = 5e-8/1536) and n=50K cohort
+pval = 5E-8/1536
+pow <- power_beta_maf(beta = (1:20)/20, maf = (1:10)/1000, r2 = 1, n = 50000, pval = pval)
+m <- melt(pow)
+names(m) <- c("beta", "maf", "power")
+ggplot(m, aes(x = beta, y = maf, fill = power, label = round(power, digits = 2))) + geom_tile(aes(fill = power)) + 
+  scale_fill_distiller(palette = "YlGnBu") + geom_text(aes(label = round (power, digits = 2))) + 
+  labs (x = "beta (standardized)", y = "Minor allele frequency", title =  bquote(paste(alpha,"=", .(signif(pval, 1)),"; n=50,000", sep='')))  + 
+  scale_x_continuous (breaks = unique(m$beta)) + scale_y_continuous (breaks = unique(m$maf))
+ggsave(plot = last_plot(), filename = '/home/sorokin/projects/power/power_calcs_ppp_n50000_p3e11.png',dpi = 330, units = "in", height = 5, width = 10)
+
+
+## 4  . 1000 independent tests and n=50K cohort
+pval = 0.05/1000
+pow <- power_beta_maf(beta = (1:20)/20, maf = (1:10)/1000, r2 = 1, n = 50000, pval = pval)
+m <- melt(pow)
+names(m) <- c("beta", "maf", "power")
+ggplot(m, aes(x = beta, y = maf, fill = power, label = round(power, digits = 2))) + geom_tile(aes(fill = power)) + 
+  scale_fill_distiller(palette = "YlGnBu") + geom_text(aes(label = round (power, digits = 2))) + 
+  labs (x = "beta (standardized)", y = "Minor allele frequency", title =  bquote(paste(alpha,"=", .(pval), "; n=50,000",sep='')))  + 
+  scale_x_continuous (breaks = unique(m$beta)) + scale_y_continuous (breaks = unique(m$maf))
+ggsave(plot = last_plot(), filename = '/home/sorokin/projects/power/power_calcs_ppp_n50000_p5e5.png',dpi = 330, units = "in", height = 5, width = 10)
+ 
